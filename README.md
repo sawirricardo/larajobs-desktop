@@ -1,6 +1,9 @@
 # Larajobs Desktop
 
+![Larajobs Desktop](/resources/ai/screenshot.png)
 The desktop notifier for Larajobs.
+
+Created to participate Larajobs' bounty https://twitter.com/laraveljobs/status/1682805403124477955
 
 ## Installation
 
