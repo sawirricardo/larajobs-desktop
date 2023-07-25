@@ -21,6 +21,7 @@ class NativeAppServiceProvider
             ->icon(resource_path('ai/menuBarIconTemplate.png'));
         Menu::new()
             ->appMenu()
+            ->viewMenu()
             ->submenu('About', Menu::new()
                 ->link('https://larajobs.com', 'Larajobs')
                 ->separator()
@@ -28,11 +29,6 @@ class NativeAppServiceProvider
                 ->link('https://sawirstudio.com', 'SawirStudio')
                 ->separator()
                 ->quit()
-            )
-            ->submenu('Settings', Menu::new()
-                ->toggleDevTools()
-                // ->separator()
-                // ->link('https://laravel.com', 'Learn More', 'CmdOrCtrl+L')
             )
             ->register();
 
