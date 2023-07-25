@@ -8,6 +8,8 @@ use App\Services\LarajobsService;
 use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Tables;
+use Filament\Forms;
+use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
@@ -15,6 +17,7 @@ use Livewire\Component;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
+use Filament\Support\Colors\Color;
 use Native\Laravel\Facades\Clipboard;
 use Native\Laravel\Notification;
 use Spatie\MediaLibrary\MediaCollections\Exceptions\UnreachableUrl;
@@ -72,27 +75,21 @@ class ListJobItems extends Component implements HasForms, HasTable
         return $table
             ->query(JobItem::query())
             ->deferLoading()
+            ->headerActions([
+                Tables\Actions\Action::make('my_stats')
+                    ->url('stats')
+                    ->openUrlInNewTab(),
+            ])
             ->columns([
                 Tables\Columns\Layout\Stack::make([
+                    Tables\Columns\TextColumn::make('is_applied')
+                        ->colors(Color::Green)
+                        ->icon(fn ($state) => ! $state ? null : 'heroicon-o-check-circle')
+                        ->formatStateUsing(fn ($state) => ! $state ? null : 'Job has been applied!'),
                     Tables\Columns\TextColumn::make('title')
                         ->searchable()
-                        ->url(fn ($record) => $record->link)
-                        ->openUrlInNewTab(),
-                    Tables\Columns\Layout\Split::make([
-                        Tables\Columns\TextColumn::make('published_at')
-                            ->label('Published Date')
-                            ->tooltip(fn ($state) => $state)
-                            ->formatStateUsing(fn ($state) => $state->diffForHumans(short: true))
-                            ->icon('heroicon-o-clock')
-                            ->grow(false)
-                            ->sortable(),
-                        Tables\Columns\TextColumn::make('salary')
-                            ->icon('heroicon-o-banknotes')
-                            ->grow(false),
-                        Tables\Columns\TextColumn::make('location')
-                            ->icon('heroicon-o-map-pin')
-                            ->grow(false),
-                    ]),
+                        ->openUrlInNewTab()
+                        ->url(fn ($record) => $record->link),
                     Tables\Columns\TextColumn::make('company.name')
                         ->icon('heroicon-o-building-office')
                         ->tooltip('filter by this company')
@@ -100,35 +97,97 @@ class ListJobItems extends Component implements HasForms, HasTable
                         ->searchable()
                         ->grow(false)
                         ->action(function ($livewire, $record) {
-                            $livewire->tableFilters['company_id']['value'] = $record->company_id;
+                            data_set(
+                                $livewire->tableFilters,
+                                'company_id.value',
+                                $record->company_id,
+                            );
+                        }),
+                    Tables\Columns\TextColumn::make('salary')
+                        ->icon('heroicon-o-banknotes')
+                        ->grow(false),
+                    Tables\Columns\TextColumn::make('location')
+                        ->icon('heroicon-o-map-pin')
+                        ->grow(false),
+                    Tables\Columns\TextColumn::make('published_at')
+                        ->sortable()
+                        ->grow(false)
+                        ->label('Published Date')
+                        ->icon('heroicon-o-clock')
+                        ->tooltip(fn ($state) => $state)
+                        ->formatStateUsing(fn ($state) => $state->diffForHumans(short: true))
+                        ->action(function ($livewire, $state) {
+                            data_set(
+                                $livewire->tableFilters,
+                                'published_at.from',
+                                $state->toFormattedDateString(),
+                            );
                         }),
                 ]),
             ])
             ->filters([
                 Tables\Filters\TernaryFilter::make('applied_at')
-                    ->label('applied?')
                     ->nullable()
-                    ->default(false),
+                    ->default(false)
+                    ->label('applied?'),
                 Tables\Filters\SelectFilter::make('company_id')
-                    ->label('Company')
                     ->searchable()
+                    ->label('Company')
                     ->relationship('company', 'name'),
                 Tables\Filters\TrashedFilter::make(),
+                Tables\Filters\Filter::make('published_at')
+                    ->form([
+                        Forms\Components\DatePicker::make('from')
+                            ->label('Published from')
+                            ->native(false),
+                        Forms\Components\DatePicker::make('until')
+                            ->label('Published until')
+                            ->native(false),
+                    ])
+                    ->query(function (Builder $query, array $data): Builder {
+                        return $query
+                            ->when(
+                                $data['from'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('published_at', '>=', $date),
+                            )
+                            ->when(
+                                $data['until'],
+                                fn (Builder $query, $date): Builder => $query->whereDate('published_at', '<=', $date),
+                            );
+                    })
+                    ->indicateUsing(function (array $data): array {
+                        $indicators = [];
+
+                        if ($data['from'] ?? null) {
+                            $indicators['from'] = 'Published from ' . Carbon::parse($data['from'])->toFormattedDateString();
+                        }
+
+                        if ($data['until'] ?? null) {
+                            $indicators['until'] = 'Published until ' . Carbon::parse($data['until'])->toFormattedDateString();
+                        }
+
+                        return $indicators;
+                    }),
             ])
             ->actions([
                 Tables\Actions\ViewAction::make()
                     ->url(fn ($record) => $record->link)
                     ->openUrlInNewTab(),
-                Tables\Actions\DeleteAction::make(),
-                Tables\Actions\Action::make('mark_applied')
+                Tables\Actions\DeleteAction::make()
                     ->hidden(fn ($record) => $record->applied_at)
+                    ->label('Not Interested'),
+                Tables\Actions\Action::make('apply job')
+                    ->icon('heroicon-o-check-circle')
+                    ->hidden(fn ($record) => $record->applied_at)
+                    ->tooltip('Mark this job as applied')
                     ->action(function ($record) {
-                        if (empty($record->applied_at)) {
-                            $record->touch('applied_at');
-                            return;
-                        }
-                        $record->update(['applied_at' => null]);
-                    })
+                        $record->touch('applied_at');
+                        FilamentNotification::make()
+                            ->title('Job applied!')
+                            ->body('Wishing you infinite success!')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->bulkActions([
                 // Tables\Actions\BulkActionGroup::make([
