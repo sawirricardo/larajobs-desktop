@@ -19,19 +19,23 @@ Created to participate Larajobs' bounty https://twitter.com/laraveljobs/status/1
 
 ## Installation
 
-```php
+```bash
 composer install
 ```
 
-```php
+```bash
 cp .env.example .env
 ```
 
-```php
+```bash
 php artisan key:generate
 ```
 
-```php
+```bash
+npm install
+```
+
+```bash
 php artisan native:serve
 ```
 
