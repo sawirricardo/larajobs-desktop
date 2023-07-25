@@ -21,19 +21,24 @@ class JobItem extends Model
         return $this->belongsTo(Company::class);
     }
 
+    public function getIsAppliedAttribute()
+    {
+        return ! empty($this->applied_at);
+    }
+
     public function getNotificationMessageAttribute()
     {
         $message = "By: {$this->company->name}," . PHP_EOL;
-
-        $message .= "Published: {$this->published_at->diffForHumans(short: true)}," . PHP_EOL;
 
         if ($this->location) {
             $message .= "Location: {$this->location}," . PHP_EOL;
         }
 
         if ($this->salary) {
-            $message .= "Salary: {$this->salary}";
+            $message .= "Salary: {$this->salary}," . PHP_EOL;
         }
+
+        $message .= "Published: {$this->published_at->diffForHumans(short: true)}";
 
         return $message;
     }
