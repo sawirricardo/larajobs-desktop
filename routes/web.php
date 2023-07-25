@@ -1,6 +1,7 @@
 <?php
 
 use App\Livewire\JobItemResources\Pages\ListJobItems;
+use App\Livewire\MyStatsPage;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,3 +17,4 @@ use Illuminate\Support\Facades\Route;
 
 // Route::view('/', 'welcome');
 Route::get('/', ListJobItems::class);
+Route::get('stats', MyStatsPage::class);
