@@ -1,5 +1,9 @@
 # Larajobs Desktop
 
+The objective of this app is not to replicate Larajobs, but to augment current functionalities.
+
+Some of the most thought features are the native notifications, which is now possible thanks to @nativephp. For this, the app wants to focus on users who are using this as their job application tracker.
+
 ![Larajobs Desktop](/resources/ai/screenshot-2.png)
 The desktop notifier for Larajobs. Get alert when a new job is published.
 
