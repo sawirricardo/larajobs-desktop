@@ -1,5 +1,4 @@
-<div x-init="setInterval(() => $wire.getFeeds(), 30000);
-setInterval(() => $wire.getFeeds(), 30000)" style="padding: 1rem" class="space-y-2">
+<div x-init="setInterval(() => $wire.getFeeds(), 30000);" style="padding: 1rem" class="space-y-2">
     <div class="flex justify-between items-center">
         <div>
             <a href="https://larajobs.com" target="_blank">
