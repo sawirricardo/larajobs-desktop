@@ -1,7 +1,15 @@
 # Larajobs Desktop
 
-![Larajobs Desktop](/resources/ai/screenshot.png)
-The desktop notifier for Larajobs.
+![Larajobs Desktop](/resources/ai/screenshot-2.png)
+The desktop notifier for Larajobs. Get alert when a new job is published.
+
+Track your job applications
+![My Statistics](/resources/ai/screenshot-statistics.png)
+
+You can also mark if you have applied to the job, or simply not interested.
+![My actions](/resources/ai/screenshot-actions.png)
+
+### Larajobs Desktop
 
 Created to participate Larajobs' bounty https://twitter.com/laraveljobs/status/1682805403124477955
 
